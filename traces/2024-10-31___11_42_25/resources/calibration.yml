@@ -1,0 +1,9 @@
+%YAML:1.0
+---
+dateTime: "2024-07-09T08:55:38Z"
+imageWidth: 640
+imageHeight: 480
+cameraIdentifier1: "vid_4e80&pid_20d7&mi_00_1L"
+cameraIdentifier2: "vid_4e80&pid_20d7&mi_00_1R"
+averageEpipolarError: 1.6276562213897705e-01
+rmsError: 2.0989427770799976e-01
