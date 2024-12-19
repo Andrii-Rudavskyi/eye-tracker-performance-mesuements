@@ -60,6 +60,9 @@ output_dir = './results/'
 for dirs in os.listdir(data_source):
     headpath = data_source + dirs + '/' + dirs + '_headPose.csv'
     eyesdatapath = data_source + dirs + '/' + dirs + '_eyeCoordinates.csv'
+    rawpath = data_source + dirs + '/' + dirs + '_raw.csv'
+    predictedpath = data_source + dirs + '/' + dirs + '_predicted.csv'
+
 
     if (not os.path.exists(headpath)):
         print(headpath)
@@ -73,11 +76,28 @@ for dirs in os.listdir(data_source):
     else:
         eyes_data = pd.read_csv(eyesdatapath)
 
+    if (not os.path.exists(rawpath)):
+        print(rawpath)
+        print("File does not exist does not exist")
+    else:
+        raw_data = pd.read_csv(rawpath)
+
+    if (not os.path.exists(predictedpath)):
+        print(predictedpath)
+        print("File does not exist does not exist")
+    else:
+        predicted_data = pd.read_csv(predictedpath)
+
     traces = []
     labels = []
+    raw_traces = []
+    raw_labels = []
+    predicted_traces = []
+    predicted_labels = []
     timestamps = 1000 * hedapose_data['CaptureTime'] #converst to from seconds to milliseconds
-
-    trace_center_Y2D = 0.5 * ( eyes_data[' Camera1Left2D.y'] + eyes_data[' Camera1Right2D.y'] ) 
+    raw_timestamps = 1000 * raw_data[' timeCaptured']
+    predicted_timestamps = 1000 * predicted_data['timeLogged']
+    #trace_center_Y2D = 0.5 * ( eyes_data[' Camera1Left2D.y'] + eyes_data[' Camera1Right2D.y'] )
 
     #x2D
     trace = 0.5 * ( eyes_data[' Camera1Left2D.x'] + eyes_data[' Camera1Right2D.x'] )
@@ -113,8 +133,52 @@ for dirs in os.listdir(data_source):
         traces.append(trace)
         labels.append('headposeZ_camera2')
 
+    #Raw
+    trace = 0.5 * (raw_data[' leftEye.x'] + raw_data[' rightEye.x']) * 10 #Convert to mm
+    if (len(trace) != 0):
+        raw_traces.append(trace)
+        raw_labels.append('X3D_raw')
+
+    trace = 0.5 * (raw_data[' leftEye.y'] + raw_data[' rightEye.y']) * 10
+    if (len(trace) != 0):
+        raw_traces.append(trace)
+        raw_labels.append('Y3D_raw')
+
+    trace = 0.5 * (raw_data[' leftEye.z'] + raw_data[' rightEye.z']) * 10
+    if (len(trace) != 0):
+        raw_traces.append(trace)
+        raw_labels.append('Z3D_raw')
+
+    # Predicted
+    trace = 0.5 * (predicted_data[' leftEye.x'] + predicted_data[' rightEye.x']) * 10
+    if (len(trace) != 0):
+        predicted_traces.append(trace)
+        predicted_labels.append('X3D_predicted')
+
+    trace = 0.5 * (predicted_data[' leftEye.y'] + predicted_data[' rightEye.y']) * 10
+    if (len(trace) != 0):
+        predicted_traces.append(trace)
+        predicted_labels.append('Y3D_predicted')
+
+    trace = 0.5 * (predicted_data[' leftEye.z'] + predicted_data[' rightEye.z']) * 10
+    if (len(trace) != 0):
+        predicted_traces.append(trace)
+        predicted_labels.append('Z3D_predicted')
+
+
     #loop through all signals
-    for i in range(0, 6):
+    for i in range(0, len(labels)):
         signal = traces[i]
         filtered_signal, noise, noise_on_trace = extract_noise(signal=signal, axt=timestamps, dt=100, pl=1, data_label=labels[i], results_path = output_dir + dirs + '/')
         print(labels[i], noise_on_trace)
+
+    for i in range(0, len(raw_labels)):
+        signal = raw_traces[i]
+        filtered_signal, noise, noise_on_trace = extract_noise(signal=signal, axt=raw_timestamps, dt=100, pl=1, data_label=raw_labels[i], results_path = output_dir + dirs + '/')
+        print(raw_labels[i], noise_on_trace)
+
+    for i in range(0, len(predicted_labels)):
+        signal = predicted_traces[i]
+        filtered_signal, noise, noise_on_trace = extract_noise(signal=signal, axt=predicted_timestamps, dt=100, pl=1, data_label=predicted_labels[i], results_path = output_dir + dirs + '/')
+        print(predicted_labels[i], noise_on_trace)
+
